@@ -1,0 +1,119 @@
+  ##1
+yum install xinetd
+
+##2
+vi /etc/xinetd.d/http-switch
+
+##
+service http-switch
+{
+  disable = no
+  type = UNLISTED
+  socket_type = stream
+  protocol = tcp
+  wait = no
+  redirect = 192.168.2.90 80
+  bind = 192.168.2.93
+  port = 3000
+  user = nobody
+}
+
+service http-switch
+{
+  disable = no
+  type = UNLISTED
+  socket_type = stream
+  protocol = tcp
+  wait = no
+  redirect = 192.168.2.91 80
+  bind = 192.168.2.93
+  port = 3001
+  user = nobody
+}
+
+service http-switch
+{
+  disable = no
+  type = UNLISTED
+  socket_type = stream
+  protocol = tcp
+  wait = no
+  redirect = 192.168.2.92 80
+  bind = 192.168.2.93
+  port = 3002
+  user = nobody
+}
+
+service http-switch
+{
+  disable = no
+  type = UNLISTED
+  socket_type = stream
+  protocol = tcp
+  wait = no
+  redirect = 127.0.0.1 80
+  bind = 192.168.2.93
+  port = 80
+  user = nobody
+}
+
+
+##3
+service xinetd restart
+
+##4
+netstat -an | grep 3000
+netstat -an | grep 3001
+netstat -an | grep 3002
+
+
+##5
+vi /etc/hosts
+
+##
+192.168.2.93    web90 web90.localhost.localdomain
+192.168.2.93    web91 web91.localhost.localdomain
+192.168.2.93    web92 web92.localhost.localdomain
+
+##
+systemctl restart systemd-hostnamed
+
+/*
+C:\WINDOWS\System32\drivers\etc\hosts
+
+192.168.2.93		web90.localhost.localdomain
+192.168.2.93		web91.localhost.localdomain
+192.168.2.93		web92.localhost.localdomain
+*/
+
+
+##6
+vi /var/www/html/.htaccess
+
+##
+deny from all
+<If "%{HTTP_HOST} == 'web90.localhost.localdomain:8080'">
+    allow from all
+</If>
+
+##7
+vi /var/www/html/index.php
+
+##
+<?php
+$serv_arr = array();
+$serv_arr[HTTP_HOST] 	= $_SERVER[HTTP_HOST];
+$serv_arr[SERVER_NAME] 	= $_SERVER[SERVER_NAME];
+$serv_arr[SERVER_ADDR] 	= $_SERVER[SERVER_ADDR];
+$serv_arr[SERVER_PORT] 	= $_SERVER[SERVER_PORT];
+
+
+echo "<pre>";
+print_r($serv_arr);
+echo "</pre>";
+?>
+
+##
+
+
+https://serverfault.com/questions/426455/name-based-port-forwarding-or-binding-in-linux-centos-without-using-a-web-serv
